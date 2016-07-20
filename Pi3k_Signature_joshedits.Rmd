@@ -1,0 +1,39 @@
+---
+title: "PI3K_Signature"
+author: "Shelley MacNeil"
+date: "July 11, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load the Data Evan Sent
+## Notes
+```{r }
+working_dir="C:/Users/10002293/Documents/PI3K_Signature_Validation"
+setwd(working_dir)
+
+load("20160329_ICBP_single_withpi3k.rda")
+
+View(akt)
+View(c_pi3k)
+View(c_pi3k_gfp)
+
+```
+```{r}
+dim(gfp_pi3k)
+```
+pi3k_gfp_f <-gfp_pi3k[apply(gfp_pi3k[,1:17]==0,1,mean) < 0.85, ] 
+dim(pi3k_gfp_f)
+pi3k_f <-gfp_pi3k[apply(gfp_pi3k==0,1,mean) < 0.85,]
+dim(pi3k_gfp_f)
+GFP_f<-pi3k_gfp_f[,1:8]
+PI3K_f<-pi3k_gfp_f[,9:17]
+View(GFP_f)
+View(PI3K_f)
+write.table(PI3K_f, "Pi3K_signature_tpm.txt",col.names=NA,row.names=T,sep='\t',quote=F)
+write.table(GFP_f, "Pi3K_signature_gfp.txt",col.names=NA,row.names=T,sep='\t',quote=F)
+
+
