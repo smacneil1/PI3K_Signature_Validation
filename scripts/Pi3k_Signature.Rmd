@@ -1,0 +1,231 @@
+---
+title: "PI3K_Signature"
+author: "Shelley MacNeil"
+date: "July 11, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the RNA-seq PI3K Signature
+```{r }
+source("~/Documents/PhDProjects/GFRN_signatures/Key_ASSIGN_functions_balancedsig.R")
+source("~/Documents/PhDProjects/CommonScripts/CommonRFunctions.R")
+working_dir="~/Documents/PhDProjects/PI3K_Signature_Validation/data/"
+setwd(working_dir)
+pi3k_gfp = readRDS("~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_pi3k.rds")
+dim(pi3k_gfp)
+colnames(pi3k_gfp)
+
+pi3k_gfp_rm5610_both=pi3k_gfp[,-c(5,6,9)]
+dim(pi3k_gfp_rm5610_both)
+pi3k_rm5610_only= pi3k_gfp_rm5610_both[,7:15]
+gfp_rm5610_only= pi3k_gfp_rm5610_both[,1:6]
+write.table(pi3k_gfp_rm5610_both, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_gfp_rm5610_both.txt", col.names=NA,sep='\t',quote=F)
+write.table(pi3k_rm5610_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_rm5610_only.txt", col.names=NA,sep='\t',quote=F)
+write.table(gfp_rm5610_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_rm5610_only.txt", col.names=NA,sep='\t',quote=F)
+
+#pi3k_gfp=pi3k_gfp[,-6]
+# filter low expressing genes
+View(pi3k_gfp)
+pi3k_gfp_f <-pi3k_gfp[apply(pi3k_gfp[,1:17]==0,1,mean) < 0.85,]
+dim(pi3k_gfp_f)
+View(pi3k_gfp_f)
+write.table(pi3k_gfp_f, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_gfp_tmg_with6.txt", col.names=NA,sep='\t',quote=F)
+
+pi3k_f_6=pi3k_gfp_f[,10:18]
+write.table(pi3k_f_6, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_only_tmg_with6.txt", col.names=NA,sep='\t',quote=F)
+
+gfp_f_6=pi3k_gfp_f[,1:9]
+write.table(gfp_f_6, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_only_tmg_with6.txt", col.names=NA,sep='\t',quote=F)
+
+```
+
+Read in the binReg results
+```{r}
+setwd("~/Documents/PhDProjects/PI3K_Signature_Validation/BinReg_Probabilities/ICBP_rm5610_DWD/")
+binreg_files=system("ls", intern=TRUE)
+binreg_files
+length(binreg_files)
+library(data.table)
+
+for(i in 1:length(binreg_files)){
+  ###reading in the filess one at a time
+  #f= as.matrix(read.table(binreg_files[1], stringsAsFactors = FALSE, header=1,sep='\t', quote=""))
+  f <- read.delim(binreg_files[i], quote="")
+  f= f[31:85,c(2,5)]
+  #f= f[35:89,c(2,5)]
+  is.numeric(f[2])
+  rownames(f)=f[,1]
+  colnames(f)[2]=c(gsub('\\..*$','',binreg_files[i]))
+  f
+  class(f)
+  f[,2]=as.numeric( f[,2])
+  is.numeric( f[,2])
+  var_name=gsub('\\..*$','',binreg_files[i])
+  print(var_name)
+  assign(var_name, f) 
+}  
+
+typeof(probabilities_PI3K_400)
+is.numeric(probabilities_PI3K_400)
+is.numeric(probabilities_PI3K_400[,2])
+
+class(probabilities_PI3K_50)
+#icbp_prob_matix <- cbind(probabilities_PI3K_5[2],probabilities_PI3K_10[2],probabilities_PI3K_15[2],probabilities_PI3K_20[2],probabilities_PI3K_25[2], probabilities_PI3K_30[2],probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_125[2],probabilities_PI3K_150[2],probabilities_PI3K_175[2],probabilities_PI3K_200[2],probabilities_PI3K_225[2],probabilities_PI3K_250[2],probabilities_PI3K_275[2],probabilities_PI3K_350[2],probabilities_PI3K_400[2],probabilities_PI3K_450[2],probabilities_PI3K_475[2],probabilities_PI3K_500[2]) 
+
+icbp_prob_matix <- cbind(probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_200[2],probabilities_PI3K_300[2],probabilities_PI3K_400[2],probabilities_PI3K_500[2]) 
+
+
+class(icbp_prob_matix)
+typeof(icbp_prob_matix)
+View(cor(icbp_prob_matix))
+dim(icbp_prob_matix)
+```
+
+Read in the ICBP protein data and ICBP drug data
+```{r}
+
+data_dir <- "~/Documents/PhDProjects/Multipathway_Modeling/Data/"
+icbp_drug_response<-paste(data_dir,"ICBP_drugs.txt",sep="/")
+ICBP_drugs<-read.delim(icbp_drug_response, header=1, sep='\t',row.names=1, stringsAsFactors = FALSE)
+ICBP_drugs_2=ICBP_drugs[,11:100]
+View(ICBP_drugs_2)
+class(ICBP_drugs_2)
+colnames(ICBP_drugs_2)
+is.numeric(ICBP_drugs_2)
+is.numeric(ICBP_drugs_2[,50])
+
+
+ICBP_RPPA_path=readFile("~/Documents/PhDProjects/Multipathway_Modeling/Data/ICBP_proteomics.txt") 
+ICBP_RPPA_path
+is.numeric(ICBP_RPPA_path[,3])
+
+```
+
+Correlate ICBP Drug Data
+```{r}
+
+icbp_drug=merge_drop(icbp_prob_matix,ICBP_drugs )
+View(icbp_drug)
+colnames(icbp_drug)
+icbp_drug[,1]
+icbp_drug[,32]
+cor(icbp_drug$probabilities_PI3K_50, icbp_drug$X17.AAG, use="pairwise",method="spearman")
+
+class(icbp_drug)
+colnames(icbp_drug)
+
+probs = icbp_drug[,1:7]
+#probs = icbp_drug[,1:21]
+View(probs)
+typeof(probs)
+class(probs)
+cor(probs)
+is.numeric(probs)
+is.numeric(probs[,1])
+colnames(icbp_drug)
+
+drug= icbp_drug[,18:107]
+colnames(drug)
+dim(drug)
+View(drug)
+typeof(drug)
+class(drug)
+
+for (i in 1:90){
+  print(is.numeric(drug[,i]))
+}
+
+
+
+cor(drug, use="pairwise",method="spearman")
+
+#cor_drugs_probs=cor(probs, drugs)
+
+drug_prob_corrs=cor(drug, probs, use="pairwise",method="spearman")
+drug_prob_corrs=t(drug_prob_corrs)
+View(drug_prob_corrs)
+
+#write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors.txt", col.names=NA,sep='\t',quote=F)
+#write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors_rm5610.txt", col.names=NA,sep='\t',quote=F)
+write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors_rm5610_DWD.txt", col.names=NA,sep='\t',quote=F)
+
+
+
+
+
+```
+
+Correlate with ICBP protein data
+```{r}
+
+icbp_rppa=merge_drop(icbp_prob_matix,ICBP_RPPA_path)
+View(icbp_rppa)
+colnames(icbp_rppa)
+
+icbp= icbp_rppa[,1:7]
+
+rppa= icbp_rppa[,8:77]
+View(rppa)
+  
+corrs_rppa = cor(icbp,rppa,method="spearman")
+#write.table(corrs_rppa, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_RPPA_Cors.txt", col.names=NA,sep='\t',quote=F)
+#write.table(corrs_rppa, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_RPPA_Cors_rm5610.txt", col.names=NA,sep='\t',quote=F)
+write.table(corrs_rppa, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_RPPA_Cors_rm5610_DWD.txt", col.names=NA,sep='\t',quote=F)
+
+View(icbp_rppa)
+
+```
+
+
+
+
+Correlate binReg with TCGA protein data
+```{r}
+TCGA_rppa<-read.csv("~/Documents/PhDProjects/Multipathway_Modeling/Data//TCGA-BRCA-RBN.csv",header=1,check.names = F)
+```
+
+# old PI3K signatue 
+```{r}
+
+# pi3k only
+pi3k_scan<-as.matrix(read.table("~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_Expr_SCAN_Symbol.txt", sep='\t', stringsAsFactors=FALSE, header=1, row.names=1))
+
+# gfp only scan
+gfp_pi3k_scan<-as.matrix(read.table("~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_NP63_Control_SCAN_Symbol.txt", sep='\t', stringsAsFactors=FALSE, header=1, row.names=1))
+
+#merge
+SCAN_gfp_pi3k_m=t(merge_drop(gfp_pi3k_scan,pi3k_scan))
+View(SCAN_gfp_pi3k_m)
+SCAN_gfp_pi3k_t <- SCAN_gfp_pi3k_m[order(row.names(SCAN_gfp_pi3k_m)), ]
+View(SCAN_gfp_pi3k_t)
+
+rows= c("PI3K1", "PI3K2", "PI3K3", "PI3K4", "PI3K5", "PI3K6", "PI3K7", "PI3K8", "GFP1","GFP2", "GFP3", "GFP4","GFP5", "GFP6", "GFP7", "GFP8", "GFP9", "GFP10", "GFP11" )
+
+rownames(SCAN_gfp_pi3k_t)= rows
+
+View(SCAN_gfp_pi3k_t)
+SCAN_gfp_pi3k =t(SCAN_gfp_pi3k_t )
+colnames(SCAN_gfp_pi3k)
+View(SCAN_gfp_pi3k)
+
+write.table(SCAN_gfp_pi3k, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_GFP_SCAN_Symbol_SM.txt", col.names=NA,sep='\t',quote=F)
+
+pi3k_only=SCAN_gfp_pi3k[,1:8]
+View(pi3k_only)
+write.table(pi3k_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_Only_SCAN_Symbol_SM.txt", col.names=NA,sep='\t',quote=F)
+
+gfp_only=SCAN_gfp_pi3k[,9:19]
+View(gfp_only)
+write.table(gfp_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_GFP_Only_SCAN_Symbol_SM.txt", col.names=NA,sep='\t',quote=F)
+
+
+
+
+
+```
+
+
