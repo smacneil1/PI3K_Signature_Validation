@@ -19,16 +19,6 @@ pi3k_gfp = readRDS("~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_p
 dim(pi3k_gfp)
 colnames(pi3k_gfp)
 
-pi3k_gfp_rm5610_both=pi3k_gfp[,-c(5,6,9)]
-dim(pi3k_gfp_rm5610_both)
-pi3k_rm5610_only= pi3k_gfp_rm5610_both[,7:15]
-gfp_rm5610_only= pi3k_gfp_rm5610_both[,1:6]
-write.table(pi3k_gfp_rm5610_both, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_gfp_rm5610_both.txt", col.names=NA,sep='\t',quote=F)
-write.table(pi3k_rm5610_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_rm5610_only.txt", col.names=NA,sep='\t',quote=F)
-write.table(gfp_rm5610_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_rm5610_only.txt", col.names=NA,sep='\t',quote=F)
-
-#pi3k_gfp=pi3k_gfp[,-6]
-# filter low expressing genes
 View(pi3k_gfp)
 pi3k_gfp_f <-pi3k_gfp[apply(pi3k_gfp[,1:17]==0,1,mean) < 0.85,]
 dim(pi3k_gfp_f)
@@ -40,6 +30,123 @@ write.table(pi3k_f_6, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi
 
 gfp_f_6=pi3k_gfp_f[,1:9]
 write.table(gfp_f_6, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_only_tmg_with6.txt", col.names=NA,sep='\t',quote=F)
+
+# now remove the bad GFPS
+pi3k_gfp_rm5610_both=pi3k_gfp_f[,-c(5,6,9)]
+View(pi3k_gfp_rm5610_both)
+dim(pi3k_gfp_rm5610_both)
+
+# I don't think i filtered when I wrote these out..
+pi3k_rm5610_only= pi3k_gfp_rm5610_both[,7:15]
+gfp_rm5610_only= pi3k_gfp_rm5610_both[,1:6]
+write.table(pi3k_gfp_rm5610_both, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_gfp_rm5610_both.txt", col.names=NA,sep='\t',quote=F)
+write.table(pi3k_rm5610_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/pi3k_rm5610_only.txt", col.names=NA,sep='\t',quote=F)
+write.table(gfp_rm5610_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_rm5610_only.txt", col.names=NA,sep='\t',quote=F)
+
+#pi3k_gfp=pi3k_gfp[,-6]
+# filter low expressing genes
+
+
+```
+
+Plot PI3K gene
+```{r}
+
+pi3k_gene_tpm = as.matrix(pi3k_gfp_f["PIK3CA",])
+her2_gene_tpm = as.matrix(pi3k_gfp_f["ERBB2",])
+
+dim(pi3k_gene_tpm)
+boxplot(pi3k_gene_tpm[1:9],pi3k_gene_tpm[10:18], names=c("GFP", "PI3K"), main= "RNA-seq Values for PIK3CA (All GFPs)")
+tttest=t.test(pi3k_gene_tpm[1:9],pi3k_gene_tpm[10:18])
+title(sub="P-value = 0.007 ", adj=1, line=3, font=1)
+
+
+boxplot(her2_gene_tpm[1:9],her2_gene_tpm[10:18], names=c("GFP", "ERBB2"))
+t.test(her2_gene_tpm[1:9],her2_gene_tpm[10:18])
+
+dim(pi3k_gfp_rm5610_both)
+pi3k_gene_tpm_rm = as.matrix(pi3k_gfp_rm5610_both["PIK3CA",])
+boxplot(pi3k_gene_tpm_rm[1:9],pi3k_gene_tpm_rm[10:18], names=c("GFP", "PIK3CA"), main= "RNA-seq Values for PIK3CA (Rm GFP 5,6,10)")
+t.test(pi3k_gene_tpm_rm[1:9],pi3k_gene_tpm_rm[10:18])
+title(sub="P-value = 0.142 ", adj=1, line=3, font=1)
+
+```
+
+
+
+DE analysis
+```{r}
+library(limma)
+#colnames_pi3k=as.data.frame(colnames(pi3k_gfp_f))
+colnames_pi3k=as.data.frame(colnames(pi3k_gfp_rm5610_both))
+
+colnames_pi3k
+classes=(c("control","control","control","control","control","control","control","control","control", "pi3k", "pi3k","pi3k","pi3k","pi3k","pi3k","pi3k", "pi3k", "pi3k"))
+classes2=(c("control","control","control","control","control","control", "pi3k", "pi3k","pi3k","pi3k","pi3k","pi3k","pi3k", "pi3k", "pi3k"))
+classes=as.matrix(classes)
+View(classes)
+classes_all=cbind(colnames_pi3k,classes)
+classes_rm5610=cbind(colnames_pi3k,classes2)
+classes_rm5610
+
+rownames(classes)=classes[,1]
+classes
+
+design <- model.matrix(~ factor(classes[,2]))
+design
+colnames(design) <- c("ALL", "1vs2")
+fit <- lmFit(pi3k_gfp_f, design)
+fit
+fit <- eBayes(fit)
+View(fit)
+dim(fit)
+DEgenes1 <- topTable(fit,coef=2, adjust.method = "BH", number = 20401, sort.by = "p")
+View(DEgenes1)
+DEgenes_s <- DEgenes1[ which(DEgenes1$adj.P.Val < 0.01),]
+
+View(DEgenes_s)
+just_genes=as.data.frame(rownames(DEgenes_s))
+View(just_genes)
+write.table(just_genes, "~/Documents/PhDProjects/PI3K_Signature_Validation/results/DE_genes_PI3K_Signature.txt",col.names=NA,sep='\t',quote=F)
+
+res = decideTests(fit, adjust.method = "BH", p.value = 0.01)
+View(res)
+vennDiagram(res)
+
+# what about PI3k?
+pi3k_gene =DEgenes1[ "PIK3CA",]
+pi3k_gene
+
+
+# now try without GFP 5,6,10
+pi3k_gfp_rm5610_both
+
+colnames_pi3k=as.data.frame(colnames(pi3k_gfp_rm5610_both))
+colnames_pi3k
+classes=(c("control","control","control","control","control","control", "pi3k", "pi3k","pi3k","pi3k","pi3k","pi3k","pi3k", "pi3k", "pi3k"))
+classes=as.matrix(classes)
+classes
+classes=cbind(colnames_pi3k,classes)
+rownames(classes)=classes[,1]
+classes
+
+design <- model.matrix(~ factor(classes[,2]))
+design
+colnames(design) <- c("ALL", "gfpvspi3k")
+fit <- lmFit(pi3k_gfp_rm5610_both, design)
+View(fit)
+fit <- eBayes(fit)
+View(fit)
+dim(fit)
+DEgenes1 <- topTable(fit,coef=2, adjust.method = "BH", number = 20401, sort.by = "p")
+View(DEgenes1)
+DEgenes_s <- DEgenes1[ which(DEgenes1$adj.P.Val < 0.01),]
+dim(DEgenes_s)
+just_genes=as.data.frame(rownames(DEgenes_s))
+dim(just_genes)
+write.table(just_genes, "~/Documents/PhDProjects/PI3K_Signature_Validation/results/DE_genes_PI3K_Signature_rm5610.txt",col.names=NA,sep='\t',quote=F)
+
+
 
 ```
 
@@ -98,7 +205,6 @@ colnames(ICBP_drugs_2)
 is.numeric(ICBP_drugs_2)
 is.numeric(ICBP_drugs_2[,50])
 
-
 ICBP_RPPA_path=readFile("~/Documents/PhDProjects/Multipathway_Modeling/Data/ICBP_proteomics.txt") 
 ICBP_RPPA_path
 is.numeric(ICBP_RPPA_path[,3])
@@ -140,7 +246,6 @@ for (i in 1:90){
 }
 
 
-
 cor(drug, use="pairwise",method="spearman")
 
 #cor_drugs_probs=cor(probs, drugs)
@@ -152,10 +257,6 @@ View(drug_prob_corrs)
 #write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors.txt", col.names=NA,sep='\t',quote=F)
 #write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors_rm5610.txt", col.names=NA,sep='\t',quote=F)
 write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors_rm5610_DWD.txt", col.names=NA,sep='\t',quote=F)
-
-
-
-
 
 ```
 
@@ -180,9 +281,6 @@ View(icbp_rppa)
 
 ```
 
-
-
-
 Correlate binReg with TCGA protein data
 ```{r}
 TCGA_rppa<-read.csv("~/Documents/PhDProjects/Multipathway_Modeling/Data//TCGA-BRCA-RBN.csv",header=1,check.names = F)
@@ -194,8 +292,11 @@ TCGA_rppa<-read.csv("~/Documents/PhDProjects/Multipathway_Modeling/Data//TCGA-BR
 # pi3k only
 pi3k_scan<-as.matrix(read.table("~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_Expr_SCAN_Symbol.txt", sep='\t', stringsAsFactors=FALSE, header=1, row.names=1))
 
+
 # gfp only scan
 gfp_pi3k_scan<-as.matrix(read.table("~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_NP63_Control_SCAN_Symbol.txt", sep='\t', stringsAsFactors=FALSE, header=1, row.names=1))
+
+View(gfp_pi3k_scan)
 
 #merge
 SCAN_gfp_pi3k_m=t(merge_drop(gfp_pi3k_scan,pi3k_scan))
@@ -223,9 +324,86 @@ View(gfp_only)
 write.table(gfp_only, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/PI3K_GFP_Only_SCAN_Symbol_SM.txt", col.names=NA,sep='\t',quote=F)
 
 
+# plot the Pi3k gene
 
+pi3k_gene = as.matrix(SCAN_gfp_pi3k["PIK3CA",])
+pi3k_gene
+rownames(pi3k_gene)
+pi3k_gene[9:19]
+
+boxplot(pi3k_gene[9:19],pi3k_gene[1:8], names=c("GFP", "PI3K"), main= "Microarray Values for PIK3CA")
+tttest=t.test(pi3k_gene[9:19],pi3k_gene_tpm[1:8])
+tttest
+title(sub="P-value = 6.603e-09 ", adj=1, line=3, font=1)
+```
+
+Run ssGSEA on GFP vs PI3k 
+  - do it with all GFPs
+  - do with with 5,6,10 removed
+```{r}
+source("http://bioconductor.org/biocLite.R")
+install.packages("GSEABase")
+biocLite("GSEABase")
+library(GSEABase)
+biocLite("GSVAdata")
+library(GSVAdata)
+data(c2BroadSets)
+library(Biobase)
+library(genefilter)
+library(limma)
+library(RColorBrewer)
+library(GSVA)
+library(gage)
+
+# Get command-line arguments
+
+gmtFile <- "~/Documents/PhDProjects/Data/GMT_Files/c2.cp.v4.0.symbols.gmt"
+
+outputFileName_all <- "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_allGFP.txt"
+outputFileName_rm <- "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_rm5610GFP.txt"
+
+# Within GSEABase, function converts gmt files to an object that has those gene sets (convert gene set collection class, because
+# the c2BroadSets gene set collection class uses gene IDs instead of gene symbols); use the getGMT
+c2set <- getGmt(gmtFile)
+
+
+# Run GSVA in ssGSEA format and output to file
+gsva_pi3k_all <- gsva(as.matrix(pi3k_gfp_f), c2set, min.sz=10, max.sz=500, verbose=TRUE, rnaseq=TRUE, method="ssgsea")
+View(gsvaData)
+
+design_all <- model.matrix(~ factor(classes_all[,2]))
+design_all
+colnames(design_all) <- c("ALL", "GFPvsPI3K")
+
+all_fit <- lmFit(gsva_pi3k_all, design_all)
+all_fit  <- eBayes(all_fit)
+GeneSets_pi3k_all <- topTable(all_fit, coef="GFPvsPI3K", number=Inf,adjust.method = "BH", sort.by = "p" )
+View(allGeneSets)
+
+
+
+
+# now run without 5,6,or 10
+
+gsvaData_pi3k_rm5610 <- gsva(as.matrix(pi3k_gfp_rm5610_both), c2set, min.sz=10, max.sz=500, verbose=TRUE, rnaseq=TRUE, method="ssgsea")
+gsvaData_pi3k_rm5610
+
+design_rm5610 <- model.matrix(~ factor(classes_rm5610[,2]))
+design_rm5610
+colnames(design_rm5610) <- c("ALL", "GFPvsPI3K")
+
+rm5610_fit <- lmFit(gsvaData_pi3k_rm5610, design_rm5610)
+rm5610_fit  <- eBayes(rm5610_fit)
+
+GeneSets_pi3k_rm5610 <- topTable(rm5610_fit, coef="GFPvsPI3K", number=Inf,adjust.method = "BH", sort.by = "p" )
+
+View(GeneSets_pi3k_rm5610)
+
+write.table(GeneSets_pi3k_all, outputFileName_all, col.names=FALSE, quote=FALSE, sep="\t")
+write.table(GeneSets_pi3k_rm5610, outputFileName_rm, col.names=FALSE, quote=FALSE, sep="\t")
 
 
 ```
+
 
 
