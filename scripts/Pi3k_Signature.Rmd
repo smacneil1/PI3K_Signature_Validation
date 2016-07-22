@@ -11,8 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Load the RNA-seq PI3K Signature
 ```{r }
-source("~/Documents/PhDProjects/GFRN_signatures/Key_ASSIGN_functions_balancedsig.R")
-source("~/Documents/PhDProjects/CommonScripts/CommonRFunctions.R")
+source("C:/Users/10002293/PI3K_Signature_Validation/scripts/Key_ASSIGN_functions_balancedsig.R")
+source("C:/Users/10002293/PI3K_Signature_Validation/scripts/CommonRFunctions.R")
 working_dir="~/Documents/PhDProjects/PI3K_Signature_Validation/data/"
 setwd(working_dir)
 pi3k_gfp = readRDS("~/Documents/PhDProjects/PI3K_Signature_Validation/data/gfp_pi3k.rds")
@@ -117,6 +117,7 @@ vennDiagram(res)
 pi3k_gene =DEgenes1[ "PIK3CA",]
 pi3k_gene
 
+
 # now try without GFP 5,6,10
 pi3k_gfp_rm5610_both
 
@@ -151,7 +152,7 @@ write.table(just_genes, "~/Documents/PhDProjects/PI3K_Signature_Validation/resul
 
 Read in the binReg results
 ```{r}
-setwd("~/Documents/PhDProjects/PI3K_Signature_Validation/BinReg_Probabilities/ICBP_rm5610_DWD/")
+setwd("C:/Users/10002293/Desktop/ICBP_probabilities/ICBP_Oldsig")
 binreg_files=system("ls", intern=TRUE)
 binreg_files
 length(binreg_files)
@@ -161,12 +162,11 @@ for(i in 1:length(binreg_files)){
   ###reading in the filess one at a time
   #f= as.matrix(read.table(binreg_files[1], stringsAsFactors = FALSE, header=1,sep='\t', quote=""))
   f <- read.delim(binreg_files[i], quote="")
-  f= f[31:85,c(2,5)]
+  f= f[39:93,c(2,5)]
   #f= f[35:89,c(2,5)]
   is.numeric(f[2])
   rownames(f)=f[,1]
   colnames(f)[2]=c(gsub('\\..*$','',binreg_files[i]))
-  f
   class(f)
   f[,2]=as.numeric( f[,2])
   is.numeric( f[,2])
@@ -175,26 +175,27 @@ for(i in 1:length(binreg_files)){
   assign(var_name, f) 
 }  
 
-typeof(probabilities_PI3K_400)
-is.numeric(probabilities_PI3K_400)
-is.numeric(probabilities_PI3K_400[,2])
+typeof(probabilitied_300_dwdbild_icbp)
+is.numeric(probabilitied_300_dwdbild_icbp)
+is.numeric(probabilitied_300_dwdbild_icbp[,2])
 
-class(probabilities_PI3K_50)
+class(probabilitied_300_dwdbild_icbp)
 #icbp_prob_matix <- cbind(probabilities_PI3K_5[2],probabilities_PI3K_10[2],probabilities_PI3K_15[2],probabilities_PI3K_20[2],probabilities_PI3K_25[2], probabilities_PI3K_30[2],probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_125[2],probabilities_PI3K_150[2],probabilities_PI3K_175[2],probabilities_PI3K_200[2],probabilities_PI3K_225[2],probabilities_PI3K_250[2],probabilities_PI3K_275[2],probabilities_PI3K_350[2],probabilities_PI3K_400[2],probabilities_PI3K_450[2],probabilities_PI3K_475[2],probabilities_PI3K_500[2]) 
 
-icbp_prob_matix <- cbind(probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_200[2],probabilities_PI3K_300[2],probabilities_PI3K_400[2],probabilities_PI3K_500[2]) 
+icbp_prob_matix <- cbind(probabilitied_300_dwdbild_icbp[2],probabilities_50_dwd_icbp[2],probabilities_100_dwd_icbp[2],probabilities_100_dwdbild_icbp[2],probabilities_100_quantile_icbp[2],probabilities_100_shiftscale_icbp[2],probabilities_200_dwd_icbp[2],probabilities_200_dwdbild_icbp[2],probabilities_300_dwd_icbp[2],probabilities_400_dwd_icbp[2],probabilities_50_dwdbild_icbp,probabilities_400_dwdbild_icbp[2],probabilities_500_dwd_icbp[2],probabilities_500_dwdbild_icbp[2]) 
 
 
 class(icbp_prob_matix)
 typeof(icbp_prob_matix)
-View(cor(icbp_prob_matix))
+View(icbp_prob_matix)
+cor(icbp_prob_matix)
 dim(icbp_prob_matix)
 ```
 
 Read in the ICBP protein data and ICBP drug data
 ```{r}
 
-data_dir <- "~/Documents/PhDProjects/Multipathway_Modeling/Data/"
+data_dir <- "C:/Users/10002293/PI3K_Signature_Validation/filesharing"
 icbp_drug_response<-paste(data_dir,"ICBP_drugs.txt",sep="/")
 ICBP_drugs<-read.delim(icbp_drug_response, header=1, sep='\t',row.names=1, stringsAsFactors = FALSE)
 ICBP_drugs_2=ICBP_drugs[,11:100]
@@ -204,7 +205,7 @@ colnames(ICBP_drugs_2)
 is.numeric(ICBP_drugs_2)
 is.numeric(ICBP_drugs_2[,50])
 
-ICBP_RPPA_path=readFile("~/Documents/PhDProjects/Multipathway_Modeling/Data/ICBP_proteomics.txt") 
+ICBP_RPPA_path=readFile("C:/Users/10002293/PI3K_Signature_Validation/filesharing/ICBP_proteomics.txt") 
 ICBP_RPPA_path
 is.numeric(ICBP_RPPA_path[,3])
 
@@ -213,17 +214,18 @@ is.numeric(ICBP_RPPA_path[,3])
 Correlate ICBP Drug Data
 ```{r}
 
-icbp_drug=merge_drop(icbp_prob_matix,ICBP_drugs )
+icbp_drug=merge_drop(icbp_prob_matix,ICBP_drugs)
 View(icbp_drug)
 colnames(icbp_drug)
 icbp_drug[,1]
 icbp_drug[,32]
-cor(icbp_drug$probabilities_PI3K_50, icbp_drug$X17.AAG, use="pairwise",method="spearman")
+cor(icbp_drug$probabilities_50_dwd_icbp, icbp_drug$X17.AAG, use="pairwise",method="spearman")
 
 class(icbp_drug)
 colnames(icbp_drug)
 
-probs = icbp_drug[,1:7]
+probs_working= icbp_drug[,1:15]
+probs=probs_working[,-11] 
 #probs = icbp_drug[,1:21]
 View(probs)
 typeof(probs)
@@ -233,7 +235,7 @@ is.numeric(probs)
 is.numeric(probs[,1])
 colnames(icbp_drug)
 
-drug= icbp_drug[,18:107]
+drug= icbp_drug[,26:115]
 colnames(drug)
 dim(drug)
 View(drug)
@@ -255,7 +257,7 @@ View(drug_prob_corrs)
 
 #write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors.txt", col.names=NA,sep='\t',quote=F)
 #write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors_rm5610.txt", col.names=NA,sep='\t',quote=F)
-write.table(drug_prob_corrs, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_Drug_Cors_rm5610_DWD.txt", col.names=NA,sep='\t',quote=F)
+write.table(drug_prob_corrs, "C:/Users/10002293/PI3K_Signature_Validation/filesharing/PI3K_Drug_Cors_ICBP_Oldsig.txt", col.names=NA,sep='\t',quote=F)
 
 ```
 
@@ -265,17 +267,21 @@ Correlate with ICBP protein data
 icbp_rppa=merge_drop(icbp_prob_matix,ICBP_RPPA_path)
 View(icbp_rppa)
 colnames(icbp_rppa)
+icbp=icbp[,-11]
 
-icbp= icbp_rppa[,1:7]
+icbp= icbp_rppa[,1:15]
+icbp=icbp[,-11]
 
-rppa= icbp_rppa[,8:77]
+
+rppa= icbp_rppa[,16:85]
 View(rppa)
   
 corrs_rppa = cor(icbp,rppa,method="spearman")
 #write.table(corrs_rppa, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_RPPA_Cors.txt", col.names=NA,sep='\t',quote=F)
 #write.table(corrs_rppa, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_RPPA_Cors_rm5610.txt", col.names=NA,sep='\t',quote=F)
-write.table(corrs_rppa, "~/Documents/PhDProjects/PI3K_Signature_Validation/data/RNAseq_PI3K_ICBP_RPPA_Cors_rm5610_DWD.txt", col.names=NA,sep='\t',quote=F)
+write.table(corrs_rppa, "C:/Users/10002293/PI3K_Signature_Validation/filesharing/PI3K_ICBP_RPPA_Cors_Oldsig.txt", col.names=NA,sep='\t',quote=F)
 
+View(corrs_rppa)
 View(icbp_rppa)
 
 ```
@@ -360,8 +366,6 @@ gmtFile <- "~/Documents/PhDProjects/Data/GMT_Files/c2.cp.v4.0.symbols.gmt"
 
 outputFileName_all <- "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_allGFP.txt"
 outputFileName_rm <- "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_rm5610GFP.txt"
-outputFileName_old= "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_old.txt"
-
 
 # Within GSEABase, function converts gmt files to an object that has those gene sets (convert gene set collection class, because
 # the c2BroadSets gene set collection class uses gene IDs instead of gene symbols); use the getGMT
@@ -382,6 +386,8 @@ GeneSets_pi3k_all <- topTable(all_fit, coef="GFPvsPI3K", number=Inf,adjust.metho
 View(allGeneSets)
 
 
+
+
 # now run without 5,6,or 10
 
 gsvaData_pi3k_rm5610 <- gsva(as.matrix(pi3k_gfp_rm5610_both), c2set, min.sz=10, max.sz=500, verbose=TRUE, rnaseq=TRUE, method="ssgsea")
@@ -398,35 +404,8 @@ GeneSets_pi3k_rm5610 <- topTable(rm5610_fit, coef="GFPvsPI3K", number=Inf,adjust
 
 View(GeneSets_pi3k_rm5610)
 
-write.table(GeneSets_pi3k_all, outputFileName_all, col.names=T, quote=FALSE, sep="\t")
-write.table(GeneSets_pi3k_rm5610, outputFileName_rm, col.names=T, quote=FALSE, sep="\t")
-
-#now do it on andreas signature
-
-gsva_pi3k_old_sig <- gsva(as.matrix(SCAN_gfp_pi3k), c2set, min.sz=10, max.sz=500, verbose=TRUE, rnaseq=F, method="ssgsea")
-
-colnames_pi3k=as.data.frame(colnames(SCAN_gfp_pi3k))
-colnames_pi3k
-
-classes=(c( "pi3k","pi3k","pi3k","pi3k","pi3k","pi3k", "pi3k", "pi3k", "control","control","control","control","control","control","control","control","control","control","control"))
-classes=as.matrix(classes)
-classes
-classes=cbind(colnames_pi3k,classes)
-rownames(classes)=classes[,1]
-classes
-
-
-
-design_old <- model.matrix(~ factor(classes[,2]))
-design_old
-colnames(design_old) <- c("ALL", "PI3KvsGFP")
-old_fit <- lmFit(gsva_pi3k_old_sig, design_old)
-old_fit  <- eBayes(old_fit)
-GeneSets_pi3k_old <- topTable(old_fit, coef="PI3KvsGFP", number=Inf,adjust.method = "BH", sort.by = "p" )
-
-View(GeneSets_pi3k_old)
-write.table(GeneSets_pi3k_old , outputFileName_old, col.names=T, quote=FALSE, sep="\t")
-
+write.table(GeneSets_pi3k_all, outputFileName_all, col.names=FALSE, quote=FALSE, sep="\t")
+write.table(GeneSets_pi3k_rm5610, outputFileName_rm, col.names=FALSE, quote=FALSE, sep="\t")
 
 
 ```
