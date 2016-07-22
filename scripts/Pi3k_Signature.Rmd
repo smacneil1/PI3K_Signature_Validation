@@ -117,7 +117,6 @@ vennDiagram(res)
 pi3k_gene =DEgenes1[ "PIK3CA",]
 pi3k_gene
 
-
 # now try without GFP 5,6,10
 pi3k_gfp_rm5610_both
 
@@ -361,6 +360,8 @@ gmtFile <- "~/Documents/PhDProjects/Data/GMT_Files/c2.cp.v4.0.symbols.gmt"
 
 outputFileName_all <- "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_allGFP.txt"
 outputFileName_rm <- "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_rm5610GFP.txt"
+outputFileName_old= "~/Documents/PhDProjects/PI3K_Signature_Validation/results/ssGSEA_PI3K_old.txt"
+
 
 # Within GSEABase, function converts gmt files to an object that has those gene sets (convert gene set collection class, because
 # the c2BroadSets gene set collection class uses gene IDs instead of gene symbols); use the getGMT
@@ -381,8 +382,6 @@ GeneSets_pi3k_all <- topTable(all_fit, coef="GFPvsPI3K", number=Inf,adjust.metho
 View(allGeneSets)
 
 
-
-
 # now run without 5,6,or 10
 
 gsvaData_pi3k_rm5610 <- gsva(as.matrix(pi3k_gfp_rm5610_both), c2set, min.sz=10, max.sz=500, verbose=TRUE, rnaseq=TRUE, method="ssgsea")
@@ -399,8 +398,35 @@ GeneSets_pi3k_rm5610 <- topTable(rm5610_fit, coef="GFPvsPI3K", number=Inf,adjust
 
 View(GeneSets_pi3k_rm5610)
 
-write.table(GeneSets_pi3k_all, outputFileName_all, col.names=FALSE, quote=FALSE, sep="\t")
-write.table(GeneSets_pi3k_rm5610, outputFileName_rm, col.names=FALSE, quote=FALSE, sep="\t")
+write.table(GeneSets_pi3k_all, outputFileName_all, col.names=T, quote=FALSE, sep="\t")
+write.table(GeneSets_pi3k_rm5610, outputFileName_rm, col.names=T, quote=FALSE, sep="\t")
+
+#now do it on andreas signature
+
+gsva_pi3k_old_sig <- gsva(as.matrix(SCAN_gfp_pi3k), c2set, min.sz=10, max.sz=500, verbose=TRUE, rnaseq=F, method="ssgsea")
+
+colnames_pi3k=as.data.frame(colnames(SCAN_gfp_pi3k))
+colnames_pi3k
+
+classes=(c( "pi3k","pi3k","pi3k","pi3k","pi3k","pi3k", "pi3k", "pi3k", "control","control","control","control","control","control","control","control","control","control","control"))
+classes=as.matrix(classes)
+classes
+classes=cbind(colnames_pi3k,classes)
+rownames(classes)=classes[,1]
+classes
+
+
+
+design_old <- model.matrix(~ factor(classes[,2]))
+design_old
+colnames(design_old) <- c("ALL", "PI3KvsGFP")
+old_fit <- lmFit(gsva_pi3k_old_sig, design_old)
+old_fit  <- eBayes(old_fit)
+GeneSets_pi3k_old <- topTable(old_fit, coef="PI3KvsGFP", number=Inf,adjust.method = "BH", sort.by = "p" )
+
+View(GeneSets_pi3k_old)
+write.table(GeneSets_pi3k_old , outputFileName_old, col.names=T, quote=FALSE, sep="\t")
+
 
 
 ```
