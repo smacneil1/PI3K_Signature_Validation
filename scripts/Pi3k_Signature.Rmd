@@ -152,7 +152,11 @@ write.table(just_genes, "~/Documents/PhDProjects/PI3K_Signature_Validation/resul
 
 Read in the binReg results
 ```{r}
+<<<<<<< HEAD
+setwd("~/Documents/PhDProjects/PI3K_Signature_Validation/results/BinReg_Probabilities/ICBP_rm5610_DWD/")
+=======
 setwd("C:/Users/10002293/Desktop/TCGA_probabilities/")
+>>>>>>> b6fe9355b68b7e679fa9704e698a2114cf3d359d
 binreg_files=system("ls", intern=TRUE)
 binreg_files
 length(binreg_files)
@@ -162,7 +166,13 @@ for(i in 1:length(binreg_files)){
   ###reading in the filess one at a time
   #f= as.matrix(read.table(binreg_files[1], stringsAsFactors = FALSE, header=1,sep='\t', quote=""))
   f <- read.delim(binreg_files[i], quote="")
+<<<<<<< HEAD
+  f
+  f= f[31:85,c(2,5)]
+  f
+=======
   f= f[31:1149,c(2,5)]
+>>>>>>> b6fe9355b68b7e679fa9704e698a2114cf3d359d
   #f= f[35:89,c(2,5)]
   is.numeric(f[2])
   rownames(f)=f[,1]
@@ -180,10 +190,15 @@ typeof(probabilities_100_DWD)
 is.numeric(probabilities_100_DWD)
 is.numeric(probabilities_100_DWD[,2])
 
+<<<<<<< HEAD
+icbp_prob_matix <- cbind(probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_200[2],probabilities_PI3K_300[2],probabilities_PI3K_400[2],probabilities_PI3K_500[2]) 
+icbp_prob_matix
+=======
 class(probabilities_100_DWD)
 #icbp_prob_matix <- cbind(probabilities_PI3K_5[2],probabilities_PI3K_10[2],probabilities_PI3K_15[2],probabilities_PI3K_20[2],probabilities_PI3K_25[2], probabilities_PI3K_30[2],probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_125[2],probabilities_PI3K_150[2],probabilities_PI3K_175[2],probabilities_PI3K_200[2],probabilities_PI3K_225[2],probabilities_PI3K_250[2],probabilities_PI3K_275[2],probabilities_PI3K_350[2],probabilities_PI3K_400[2],probabilities_PI3K_450[2],probabilities_PI3K_475[2],probabilities_PI3K_500[2]) 
 
 tcga_prob_matix <- cbind(probabilities_100_DWD[2],probabilities_100_SHIFTSCALE[2],probabilities_200_DWD[2],probabilities_200_SHIFTSCALE[2],probabilities_300_DWD[2],probabilities_300_SHIFTSCALE[2],probabilities_400_DWD[2],probabilities_400_SHIFTSCALE[2],probabilities_500_DWD[2],probabilities_500_SHIFTSCALE[2],probabilities_75_DWD[2],probabilities_75_SHIFTSCALE[2])
+>>>>>>> b6fe9355b68b7e679fa9704e698a2114cf3d359d
 
 class(tcga_prob_matix)
 typeof(tcga_prob_matix)
@@ -242,9 +257,9 @@ View(drug)
 typeof(drug)
 class(drug)
 
-for (i in 1:90){
-  print(is.numeric(drug[,i]))
-}
+#for (i in 1:90){
+#  print(is.numeric(drug[,i]))
+#}
 
 
 cor(drug, use="pairwise",method="spearman")
