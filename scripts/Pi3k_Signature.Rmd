@@ -264,6 +264,9 @@ write.table(drug_prob_corrs, "C:/Users/10002293/PI3K_Signature_Validation/filesh
 Correlate with ICBP protein data
 ```{r}
 
+View(TCGA_RPPA_path)
+View(tcga_prob_matix)
+
 TCGA_rppa=merge_drop(tcga_prob_matix,TCGA_RPPA_path)
 View(TCGA_rppa)
 colnames(TCGA_rppa)
