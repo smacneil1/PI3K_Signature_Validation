@@ -151,7 +151,7 @@ write.table(just_genes, "~/Documents/PhDProjects/PI3K_Signature_Validation/resul
 
 Read in the binReg results
 ```{r}
-setwd("~/Documents/PhDProjects/PI3K_Signature_Validation/BinReg_Probabilities/ICBP_rm5610_DWD/")
+setwd("~/Documents/PhDProjects/PI3K_Signature_Validation/results/BinReg_Probabilities/ICBP_rm5610_DWD/")
 binreg_files=system("ls", intern=TRUE)
 binreg_files
 length(binreg_files)
@@ -161,7 +161,9 @@ for(i in 1:length(binreg_files)){
   ###reading in the filess one at a time
   #f= as.matrix(read.table(binreg_files[1], stringsAsFactors = FALSE, header=1,sep='\t', quote=""))
   f <- read.delim(binreg_files[i], quote="")
+  f
   f= f[31:85,c(2,5)]
+  f
   #f= f[35:89,c(2,5)]
   is.numeric(f[2])
   rownames(f)=f[,1]
@@ -183,7 +185,7 @@ class(probabilities_PI3K_50)
 #icbp_prob_matix <- cbind(probabilities_PI3K_5[2],probabilities_PI3K_10[2],probabilities_PI3K_15[2],probabilities_PI3K_20[2],probabilities_PI3K_25[2], probabilities_PI3K_30[2],probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_125[2],probabilities_PI3K_150[2],probabilities_PI3K_175[2],probabilities_PI3K_200[2],probabilities_PI3K_225[2],probabilities_PI3K_250[2],probabilities_PI3K_275[2],probabilities_PI3K_350[2],probabilities_PI3K_400[2],probabilities_PI3K_450[2],probabilities_PI3K_475[2],probabilities_PI3K_500[2]) 
 
 icbp_prob_matix <- cbind(probabilities_PI3K_50[2],probabilities_PI3K_75[2],probabilities_PI3K_100[2],probabilities_PI3K_200[2],probabilities_PI3K_300[2],probabilities_PI3K_400[2],probabilities_PI3K_500[2]) 
-
+icbp_prob_matix
 
 class(icbp_prob_matix)
 typeof(icbp_prob_matix)
@@ -240,9 +242,9 @@ View(drug)
 typeof(drug)
 class(drug)
 
-for (i in 1:90){
-  print(is.numeric(drug[,i]))
-}
+#for (i in 1:90){
+#  print(is.numeric(drug[,i]))
+#}
 
 
 cor(drug, use="pairwise",method="spearman")
