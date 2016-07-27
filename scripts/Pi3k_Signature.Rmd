@@ -166,13 +166,13 @@ for(i in 1:length(binreg_files)){
   ###reading in the filess one at a time
   #f= as.matrix(read.table(binreg_files[1], stringsAsFactors = FALSE, header=1,sep='\t', quote=""))
   f <- read.delim(binreg_files[i], quote="")
-<<<<<<< HEAD
-  f
-  f= f[31:85,c(2,5)]
-  f
-=======
+#<<<<<<< HEAD
+#  f
+ # f= f[31:85,c(2,5)]
+#  f
+#=======
   f= f[31:1149,c(2,5)]
->>>>>>> b6fe9355b68b7e679fa9704e698a2114cf3d359d
+#>>>>>>> b6fe9355b68b7e679fa9704e698a2114cf3d359d
   #f= f[35:89,c(2,5)]
   is.numeric(f[2])
   rownames(f)=f[,1]
